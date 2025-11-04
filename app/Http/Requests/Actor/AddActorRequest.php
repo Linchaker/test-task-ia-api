@@ -16,7 +16,9 @@ class AddActorRequest extends BaseRequest
         $description = $this->input('description');
 
         if (empty($description)) {
-            return;
+            throw ValidationException::withMessages([
+                'description' => __('The description field is required.'),
+            ]);
         }
 
         /** @var ActorDataParserInterface $parser */

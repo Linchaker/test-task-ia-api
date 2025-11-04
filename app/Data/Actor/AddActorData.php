@@ -13,4 +13,5 @@ class AddActorData extends Data
     public string|null $height;
     public string|null $weight;
     public string|null $gender;
+    public int|null $age;
 }

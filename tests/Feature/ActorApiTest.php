@@ -1,6 +1,22 @@
 <?php
 
 use App\Models\Actor;
+use App\Services\Actor\Contracts\ActorDataParserInterface;
+
+beforeEach(function () {
+    $mock = Mockery::mock(ActorDataParserInterface::class);
+    $mock->shouldReceive('parse')
+        ->andReturn([
+            'first_name' => 'Tony',
+            'last_name' => 'Stark',
+            'address' => 'Kyiv, Ukraine',
+            'age' => 20,
+        ]);
+    $mock->shouldReceive('getDefaultParserPrompt')
+        ->andReturn('Prompt text');
+
+    $this->app->instance(ActorDataParserInterface::class, $mock);
+});
 
 it('can create an actor via api', function () {
     $payload = [
@@ -10,7 +26,7 @@ it('can create an actor via api', function () {
 
     $response = $this->postJson('/api/v1/actors', $payload);
 
-    $response->assertStatus(200);
+    $response->assertNoContent();
 
     $this->assertDatabaseHas('actors', [
         'email' => 'tony@example.com',
@@ -28,4 +44,13 @@ it('returns validation error if description is missing', function () {
 
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['description']);
+});
+
+it('returns parser prompt successful', function () {
+    $response = $this->getJson('/api/v1/actors/prompt-validation');
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'message' => 'Prompt text',
+        ]);
 });
